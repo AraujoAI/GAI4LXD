@@ -1,0 +1,274 @@
+<!--V4 Photography Course Dashboard -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photography Course Skills Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .grade-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .grade-input {
+            display: flex;
+            flex-direction: column;
+        }
+        .grade-input label {
+            margin-bottom: 5px;
+        }
+        .grade-input input {
+            padding: 5px;
+        }
+        #skillsChart {
+            margin-bottom: 20px;
+        }
+        .course-recommendations {
+            background-color: #e6f7ff;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #91d5ff;
+            margin-bottom: 20px;
+        }
+        .module-progress {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Photography Course Skills Dashboard</h1>
+    <div class="grade-inputs" id="gradeInputs"></div>
+    <canvas id="skillsChart"></canvas>
+    <div class="module-progress">
+        <h2>Course Module Progress</h2>
+        <div id="moduleProgress"></div>
+    </div>
+    <div class="course-recommendations">
+        <h2>Personalized Recommendations</h2>
+        <div id="courseRecommendations"></div>
+    </div>
+    <script>
+        const courseModules = [
+            'Fundamentals of Exposure',
+            'Composition Techniques',
+            'Lighting Essentials',
+            'Digital Image Editing',
+            'Color Theory in Photography',
+            'Portrait Photography Techniques',
+            'History and Theory of Photography'
+        ];
+        let skillsChart;
+
+        function initializeDashboard() {
+            createInputFields();
+            initializeChart();
+            updateDashboard();
+        }
+
+        function createInputFields() {
+            const gradeInputs = document.getElementById('gradeInputs');
+            courseModules.forEach((module, index) => {
+                const div = document.createElement('div');
+                div.className = 'grade-input';
+                div.innerHTML = `
+                    <label for="module${index + 1}">${module}:</label>
+                    <input type="number" id="module${index + 1}" min="0" max="100" value="70">
+                `;
+                gradeInputs.appendChild(div);
+            });
+        }
+
+        function initializeChart() {
+            const ctx = document.getElementById('skillsChart').getContext('2d');
+            skillsChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: courseModules,
+                    datasets: [{
+                        label: 'Module Progress',
+                        data: Array(courseModules.length).fill(70),
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgb(54, 162, 235)',
+                        pointBackgroundColor: 'rgb(54, 162, 235)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(54, 162, 235)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: false
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateDashboard() {
+            const grades = Array.from(document.querySelectorAll('.grade-input input'))
+                .map(input => parseInt(input.value));
+            skillsChart.data.datasets[0].data = grades;
+            skillsChart.update();
+            updateModuleProgress(grades);
+            updateCourseRecommendations(grades);
+        }
+
+        function updateModuleProgress(grades) {
+            const moduleProgress = document.getElementById('moduleProgress');
+            let progressHtml = "";
+            courseModules.forEach((module, index) => {
+                const progress = grades[index];
+                const color = getColorForGrade(progress);
+                progressHtml += `
+                    <div style="margin-bottom: 10px;">
+                        <strong>${module}:</strong>
+                        <span style="color: ${color};">${progress}%</span>
+                    </div>
+                `;
+            });
+            moduleProgress.innerHTML = progressHtml;
+        }
+
+        function getColorForGrade(grade) {
+            if (grade >= 90) return 'darkgreen';
+            if (grade >= 80) return 'navy';
+            if (grade >= 70) return 'dark orange';
+            if (grade >= 60) return 'red';
+            if (grade >= 50) return 'red';
+            return 'red';
+        }
+
+        function updateCourseRecommendations(grades) {
+            const courseRecommendations = document.getElementById('courseRecommendations');
+            let recommendations = "";
+            courseModules.forEach((module, index) => {
+                recommendations += `<h3>${module}: ${grades[index]}%</h3>`;
+                recommendations += `<p>${getCourseRecommendation(module, grades[index])}</p>`;
+            });
+            courseRecommendations.innerHTML = recommendations;
+        }
+
+        function getCourseRecommendation(module, grade) {
+            const recommendations = {
+                'Fundamentals of Exposure': {
+                    '10-20': "Focus on understanding the basic concept of exposure. Start with the 'Introduction to Exposure' video in Module 1. Practice with the virtual camera simulator to grasp how aperture, shutter speed, and ISO interact. Outside activity: Use your smartphone's manual camera mode to experiment with different exposure settings in various lighting conditions.",
+                    '21-30': "Review the exposure triangle diagram in your course materials. Complete the 'Exposure Basics' worksheet. Watch the 'Common Exposure Mistakes' video. Outside activity: Take a series of photos of the same subject using different exposure settings and compare the results.",
+                    '31-40': "Work through the 'Exposure Compensation' tutorial. Practice with the histogram reading exercise in Module 1.3. Outside activity: Try bracketing your exposures when photographing high-contrast scenes, then compare the results.",
+                    '41-50': "Complete the 'Metering Modes' interactive lesson. Review the case studies in 'Challenging Lighting Scenarios'. Outside activity: Experiment with spot metering in various lighting conditions, comparing the results to your camera's evaluative metering.",
+                    '51-60': "Attempt the 'Advanced Exposure Techniques' quiz. Work on the 'Long Exposure Photography' project. Outside activity: Practice night photography, experimenting with long exposures to capture light trails or star trails.",
+                    '61-70': "Study the 'Zone System' materials in the advanced section. Complete the 'Dynamic Range' exercise. Outside activity: Try HDR photography techniques, manually blending exposures in post-processing.",
+                    '71-80': "Analyze the 'Exposure in Different Genres' case studies. Work on the 'Creative Exposure' assignment. Outside activity: Experiment with intentional over or underexposure for creative effect in various photography genres.",
+                    '81-90': "Complete the 'Mastering Difficult Exposures' challenge. Contribute to the exposure tips database. Outside activity: Practice shooting in extreme lighting conditions, such as very bright sunlight or near-darkness, to push your exposure skills.",
+                    '91-100': "Mentor peers on advanced exposure techniques. Develop a personal project exploring creative uses of exposure. Outside activity: Conduct a workshop for a local photography club on mastering exposure in challenging situations."
+                },
+                'Composition Techniques': {
+                    '10-20': "Start with the 'Basic Framing' tutorial in Module 2. Practice the Rule of Thirds using the grid overlay on your camera or smartphone. Outside activity: Create a 'composition box' using a shoebox - cut a small viewing hole and practice framing scenes through it.",
+                    '21-30': "Complete the 'Leading Lines' exercise in your workbook. Watch the 'Balance in Composition' video lecture. Outside activity: Go on a 'leading lines' photo walk in your neighborhood, focusing on finding and photographing strong linear elements.",
+                    '31-40': "Work through the 'Negative Space' interactive lesson. Practice with the 'Golden Ratio' overlay tool. Outside activity: Experiment with the 'cardboard L' technique - use two L-shaped pieces of cardboard to frame and recompose scenes before taking photos.",
+                    '41-50': "Study the 'Symmetry and Patterns' materials. Complete the 'Rule-Breaking' composition exercise. Outside activity: Visit a local art gallery or museum and analyze the composition of paintings, sketching their underlying structures.",
+                    '51-60': "Attempt the 'Advanced Composition Techniques' quiz. Work on the 'Environmental Portraiture' composition project. Outside activity: Practice composing shots in a mini studio setup using small objects and varying backgrounds.",
+                    '61-70': "Analyze famous photographs in the 'Composition Masters' gallery. Complete the 'Dynamic Symmetry' worksheet. Outside activity: Try the 'Ten Shots' challenge - take ten different compositions of the same subject without moving your feet.",
+                    '71-80': "Work on the 'Storytelling Through Composition' assignment. Study the 'Gestalt Principles in Photography' materials. Outside activity: Experiment with forced perspective techniques, creating illusions through clever composition.",
+                    '81-90': "Complete the 'Abstract Composition' challenge. Contribute to the course's composition techniques database. Outside activity: Create a photo series using a single compositional technique across various subjects and environments.",
+                    '91-100': "Develop a workshop on advanced composition techniques for your peers. Create a personal project exploring innovative compositional approaches. Outside activity: Curate a virtual exhibition of your work, focusing on how composition enhances the message of each image."
+                },
+                'Lighting Essentials': {
+                    '10-20': "Begin with the 'Introduction to Light' video in Module 3. Practice identifying natural vs. artificial light sources. Outside activity: Create a simple light box using a cardboard box and tracing paper, experimenting with different light positions.",
+                    '21-30': "Complete the 'Direction of Light' worksheet. Watch the 'Quality of Light' tutorial. Outside activity: Photograph the same subject at different times of day, observing how natural light changes.",
+                    '31-40': "Work through the 'Basic Studio Lighting Setups' interactive lesson. Practice with the virtual lighting simulator. Outside activity: Experiment with a single desk lamp and reflectors (can be white cardboard) to light small objects.",
+                    '41-50': "Study the 'Color Temperature' materials. Complete the 'Mixed Lighting Scenarios' exercise. Outside activity: Practice using gels on a flashlight to understand how colored light affects the mood and appearance of a scene.",
+                    '51-60': "Attempt the 'Advanced Lighting Techniques' quiz. Work on the 'Environmental Lighting' project. Outside activity: Experiment with light painting techniques using flashlights and long exposures in a dark environment.",
+                    '61-70': "Analyze the 'Lighting in Different Photography Genres' case studies. Complete the 'Hard vs. Soft Light' practical assignment. Outside activity: Create a DIY beauty dish using a simple bowl and practice portrait lighting.",
+                    '71-80': "Work on the 'Recreating Natural Light in Studio' challenge. Study the 'Advanced Flash Photography' materials. Outside activity: Practice with off-camera flash, experimenting with different modifiers like umbrellas and softboxes.",
+                    '81-90': "Complete the 'Cinematic Lighting for Still Photography' project. Contribute to the lighting techniques database. Outside activity: Attempt low-key and high-key lighting setups, understanding how to control contrast and mood.",
+                    '91-100': "Develop a lighting workshop for your peers. Create a personal project exploring innovative lighting techniques. Outside activity: Collaborate with a local theater group to design and photograph dramatic lighting for their promotional materials."
+                },
+                'Digital Image Editing': {
+                    '10-20': "Start with the 'Introduction to Digital Editing' video in Module 4. Practice basic cropping and straightening in a free editor like GIMP. Outside activity: Use your smartphone's built-in editing tools to enhance photos, focusing on simple adjustments like brightness and contrast.",
+                    '21-30': "Complete the 'RAW vs. JPEG' comparison exercise. Watch the 'Basic Adjustments' tutorial. Outside activity: Download Adobe Lightroom mobile (free version) and experiment with the basic adjustment sliders on your phone photos.",
+                    '31-40': "Work through the 'Histogram Reading' interactive lesson. Practice with the provided RAW files in the exercise folder. Outside activity: Try the 'Edit This Photo' challenges on photography forums, comparing your edits with others.",
+                    '41-50': "Study the 'Color Correction Basics' materials. Complete the 'Retouching Essentials' exercise. Outside activity: Practice color grading in Adobe Lightroom, trying to match the look of film photos or movie scenes.",
+                    '51-60': "Attempt the 'Advanced Editing Techniques' quiz. Work on the 'Photo Restoration' project. Outside activity: Experiment with HDR techniques, both in-camera and through post-processing blending of multiple exposures.",
+                    '61-70': "Analyze the 'Editing Styles in Different Genres' case studies. Complete the 'Creative Effects' practical assignment. Outside activity: Create a set of Lightroom presets for different moods or genres, and apply them to a series of photos.",
+                    '71-80': "Work on the 'Advanced Compositing' challenge. Study the 'Non-Destructive Workflow' materials. Outside activity: Practice frequency separation technique for skin retouching in Photoshop or GIMP.",
+                    '81-90': "Complete the 'Fine Art Photo Manipulation' project. Contribute to the editing techniques database. Outside activity: Attempt focus stacking for macro or landscape photography, blending multiple images for extended depth of field.",
+                    '91-100': "Develop an advanced editing workshop for your peers. Create a personal project showcasing innovative digital art techniques. Outside activity: Collaborate with a graphic designer to create a mixed-media piece combining photography and digital illustration."
+                },
+                'Color Theory in Photography': {
+                    '10-20': "Begin with the 'Introduction to Color Theory' video in Module 5. Practice identifying primary and secondary colors in photographs. Outside activity: Use a color wheel app on your smartphone to find complementary colors in your environment and photograph them.",
+                    '21-30': "Complete the 'Color Harmony Basics' worksheet. Watch the 'Emotional Impact of Color' tutorial. Outside activity: Create a photo series based on monochromatic color schemes, focusing on different shades and tones of a single color.",
+                    '31-40': "Work through the 'Color Temperature and White Balance' interactive lesson. Practice with the virtual color grading tool. Outside activity: Experiment with your camera's white balance settings in different lighting conditions, comparing auto WB to manual settings.",
+                  '41-50': "Study the 'Color Spaces in Digital Photography' materials. Complete the 'Color Accent' exercise. Outside activity: Create a series of images exploring analogous color schemes in nature.",
+                    '51-60': "Attempt the 'Advanced Color Theory' quiz. Work on the 'Color Grading for Mood' project. Outside activity: Visit a local art supply store and create a physical color wheel using paint swatches, then photograph objects that match each color.",
+                    '61-70': "Analyze the 'Color in Art History' case studies. Complete the 'Split-Toning' practical assignment. Outside activity: Create a photo series based on color symbolism in different cultures.",
+                    '71-80': "Work on the 'Color Psychology in Advertising' challenge. Study the 'Advanced Color Correction' materials. Outside activity: Experiment with cross-processing techniques in digital editing to create unique color palettes.",
+                    '81-90': "Complete the 'Color Theory in Cinematography' project. Contribute to the color techniques database. Outside activity: Create a series of images inspired by the color palettes of famous painters.",
+                    '91-100': "Develop a color theory workshop for your peers. Create a personal project exploring innovative uses of color in photography. Outside activity: Collaborate with a fashion designer to create a photo series showcasing the psychological impact of color in clothing."
+                },
+                'Portrait Photography Techniques': {
+                    '10-20': "Focus on understanding basic portrait composition. Study the 'Rule of Thirds for Portraits' lesson. Outside activity: Practice taking self-portraits using your smartphone's timer function, experimenting with different angles and expressions.",
+                    '21-30': "Complete the 'Flattering Poses' worksheet. Watch the 'Natural Light Portraits' tutorial. Outside activity: Photograph friends or family members in outdoor settings, focusing on finding good natural light.",
+                    '31-40': "Work through the 'Basic Portrait Lighting Patterns' interactive lesson. Practice with a desk lamp and a willing subject. Outside activity: Create a simple reflector using cardboard and aluminum foil, then use it to fill shadows in outdoor portraits.",
+                    '41-50': "Study the 'Lens Choice for Portraits' materials. Complete the 'Environmental Portraits' exercise. Outside activity: Practice taking portraits at different focal lengths to understand how lens choice affects facial features.",
+                    '51-60': "Attempt the 'Advanced Portrait Techniques' quiz. Work on the 'Studio Portrait Lighting' project. Outside activity: Set up a mini home studio using household lamps and sheets as diffusers.",
+                    '61-70': "Analyze the 'Famous Portrait Photographers' case studies. Complete the 'Emotion in Portraits' practical assignment. Outside activity: Create a series of portraits capturing a range of emotions in your subject.",
+                    '71-80': "Work on the 'Group Portrait Challenges' exercise. Study the 'Advanced Retouching for Portraits' materials. Outside activity: Practice photographing groups of people, focusing on arranging subjects and maintaining sharpness across multiple faces.",
+                    '81-90': "Complete the 'Conceptual Portrait Photography' project. Contribute to the portrait techniques database. Outside activity: Create a themed portrait series that tells a story or represents abstract concepts.",
+                    '91-100': "Develop a portrait photography workshop for your peers. Create a personal project pushing the boundaries of traditional portraiture. Outside activity: Collaborate with a local theater group to create dramatic character portraits for their production."
+                },
+                'History and Theory of Photography': {
+                    '10-20': "Begin with the 'Timeline of Photography' video in Module 7. Create a simple timeline of major photographic inventions. Outside activity: Visit a local museum or gallery exhibiting historical photographs.",
+                    '21-30': "Complete the 'Pioneers of Photography' worksheet. Watch the 'Camera Obscura to Digital' tutorial. Outside activity: Try making a pinhole camera using a cardboard box and photograph simple scenes.",
+                    '31-40': "Work through the 'Photographic Movements' interactive lesson. Write a short essay comparing two historical photography styles. Outside activity: Recreate a famous historical photograph using modern equipment.",
+                    '41-50': "Study the 'Ethics in Photography' materials. Complete the 'Analyzing Iconic Photos' exercise. Outside activity: Attend a photography exhibition and write a critical review of the works presented.",
+                    '51-60': "Attempt the 'Photography Theory' quiz. Work on the 'Documentary vs. Art Photography' project. Outside activity: Create a photo essay on a local community issue, applying principles of documentary photography.",
+                    '61-70': "Analyze the 'Influence of Photography on Society' case studies. Complete the 'Contemporary Photography Trends' assignment. Outside activity: Interview a professional photographer about their philosophy and approach to the medium.",
+                    '71-80': "Work on the 'Photography and Other Art Forms' research paper. Study the 'Digital Revolution in Photography' materials. Outside activity: Experiment with alternative photography processes like cyanotype or salt printing.",
+                    '81-90': "Complete the 'Future of Photography' speculative essay. Contribute to the photography theory database. Outside activity: Curate a small exhibition of your work, writing an artist statement that contextualizes your approach within photographic theory.",
+                    '91-100': "Develop a lecture on an aspect of photographic history or theory. Create a personal project that challenges conventional photographic practices. Outside activity: Organize a photography symposium or discussion group exploring current debates in photographic theory."
+                }
+            };
+
+            const gradeRanges = Object.keys(recommendations[module]).sort((a, b) => {
+                const [aMin] = a.split('-').map(Number);
+                const [bMin] = b.split('-').map(Number);
+                return aMin - bMin;
+            });
+
+            for (let range of gradeRanges) {
+                const [min, max] = range.split('-').map(Number);
+                if (grade >= min && grade <= max) {
+                    return recommendations[module][range];
+                }
+            }
+
+            return "No specific recommendation available for this grade.";
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+        document.getElementById('gradeInputs').addEventListener('change', updateDashboard);
+    </script>
+</body>
+</html>
