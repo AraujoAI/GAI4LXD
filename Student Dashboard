@@ -128,7 +128,10 @@
 
         function updateDashboard() {
             const grades = Array.from(document.querySelectorAll('.grade-input input'))
-                .map(input => parseInt(input.value));
+                .map(input => {
+                    const value = parseInt(input.value, 10);
+                    return isNaN(value) ? 0 : value;
+                });
             skillsChart.data.datasets[0].data = grades;
             skillsChart.update();
             updateModuleProgress(grades);
@@ -154,7 +157,7 @@
         function getColorForGrade(grade) {
             if (grade >= 90) return 'darkgreen';
             if (grade >= 80) return 'navy';
-            if (grade >= 70) return 'dark orange';
+            if (grade >= 70) return 'darkorange';
             if (grade >= 60) return 'red';
             if (grade >= 50) return 'red';
             return 'red';
